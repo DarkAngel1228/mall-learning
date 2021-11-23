@@ -1,6 +1,9 @@
 package com.macro.mall.tiny.dao;
 
+import com.macro.mall.tiny.mbg.model.UmsAdminRoleRelation;
 import com.macro.mall.tiny.mbg.model.UmsPermission;
+import com.macro.mall.tiny.mbg.model.UmsResource;
+import com.macro.mall.tiny.mbg.model.UmsRole;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -10,9 +13,22 @@ import java.util.List;
  */
 public interface UmsAdminRoleRelationDao {
     /**
-     * 获取用户所有权限
-     * @param adminId adminId
-     * @return list
+     * 批量插入用户角色关系
      */
-    List<UmsPermission> getPermissionList(@Param("adminId") Long adminId);
+    int insertList(@Param("list") List<UmsAdminRoleRelation> adminRoleRelationList);
+
+    /**
+     * 获取用于所有角色
+     */
+    List<UmsRole> getRoleList(@Param("adminId") Long adminId);
+
+    /**
+     * 获取用户所有可访问资源
+     */
+    List<UmsResource> getResourceList(@Param("adminId") Long adminId);
+
+    /**
+     * 获取资源相关用户ID列表
+     */
+    List<Long> getAdminIdList(@Param("resourceId") Long resourceId);
 }

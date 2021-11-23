@@ -2,6 +2,9 @@ package com.macro.mall.tiny.service;
 
 import com.macro.mall.tiny.mbg.model.UmsAdmin;
 import com.macro.mall.tiny.mbg.model.UmsPermission;
+import com.macro.mall.tiny.mbg.model.UmsResource;
+import com.macro.mall.tiny.mbg.model.UmsRole;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
@@ -27,10 +30,41 @@ public interface UmsAdminService {
      */
     String login(String username, String password);
 
+
     /**
-     * 获取用户所有权限（包括角色权限和+-权限）
-     * @param adminId admin
-     * @return 权限列表
+     * 刷新token
+     * @param oldToken 旧的token
      */
-    List<UmsPermission> getPermissionList(Long adminId);
+    String refreshToken(String oldToken);
+
+    /**
+     *
+     * @param adminId
+     * @return
+     */
+    List<UmsRole> getRoleList(Long adminId);
+
+    /**
+     * 获取用户信息
+     * @param username
+     * @return
+     */
+    UserDetails loadUserDetails(String username);
+
+
+    /**
+     * 根据管理员id获取RUL资源列表
+     * @param adminId
+     * @return
+     */
+    List<UmsResource> getResourceList(Long adminId);
+
+
+    /**
+     * 通过用户名获取用户信息
+     * @param username
+     * @return
+     */
+    UserDetails loadUserByUsername(String username);
+
 }

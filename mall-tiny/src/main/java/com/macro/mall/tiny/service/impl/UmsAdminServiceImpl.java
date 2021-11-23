@@ -1,11 +1,12 @@
 package com.macro.mall.tiny.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import com.macro.mall.tiny.bo.AdminUserDetails;
 import com.macro.mall.tiny.common.utils.JwtTokenUtil;
 import com.macro.mall.tiny.dao.UmsAdminRoleRelationDao;
 import com.macro.mall.tiny.mbg.mapper.UmsAdminMapper;
-import com.macro.mall.tiny.mbg.model.UmsAdmin;
-import com.macro.mall.tiny.mbg.model.UmsAdminExample;
-import com.macro.mall.tiny.mbg.model.UmsPermission;
+import com.macro.mall.tiny.mbg.model.*;
+import com.macro.mall.tiny.service.UmsAdminCacheService;
 import com.macro.mall.tiny.service.UmsAdminService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +45,9 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     private UmsAdminMapper adminMapper;
     @Autowired
     private UmsAdminRoleRelationDao adminRoleRelationDao;
+    @Autowired
+    private UmsAdminCacheService adminCacheService;
+
 
 
 
@@ -98,8 +103,51 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         return token;
     }
 
+
+
     @Override
-    public List<UmsPermission> getPermissionList(Long adminId) {
-        return adminRoleRelationDao.getPermissionList(adminId);
+    public String refreshToken(String oldToken) {
+        return jwtTokenUtil.refreshToken(oldToken);
     }
+
+    @Override
+    public List<UmsRole> getRoleList(Long adminId) {
+        return adminRoleRelationDao.getRoleList(adminId);
+    }
+
+    @Override
+    public UserDetails loadUserDetails(String username) {
+        // 获取用户信息
+        UmsAdmin admin = getAdminByUsername(username);
+        if (admin != null) {
+            List<UmsResource> resourceList = getResourceList(admin.getId());
+            return new AdminUserDetails(admin, resourceList);
+        }
+        throw new UsernameNotFoundException("用户名或密码错误");
+    }
+    @Override
+    public List<UmsResource> getResourceList(Long adminId) {
+        List<UmsResource> resourceList = adminCacheService.getResourceList(adminId);
+        if (CollUtil.isNotEmpty(resourceList)) {
+            return resourceList;
+        }
+        resourceList = adminRoleRelationDao.getResourceList(adminId);
+        if (CollUtil.isNotEmpty(resourceList)) {
+            adminCacheService.setResourceList(adminId, resourceList);
+        }
+
+        return resourceList;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) {
+        // 获取用户信息
+        UmsAdmin admin = getAdminByUsername(username);
+        if (admin != null) {
+            List<UmsResource> resourceList = getResourceList(admin.getId());
+            return new AdminUserDetails(admin, resourceList);
+        }
+        throw new UsernameNotFoundException("用户名或密码错误");
+    }
+
 }
